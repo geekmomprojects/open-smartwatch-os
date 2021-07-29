@@ -60,3 +60,9 @@ void OswAppFireworks::loop(OswHal* hal) {
   lastTick = millis();
   delay(1000 / 30);
 }
+
+void OswAppFireworks::stop(OswHal* hal) {
+#ifdef GIF_BG
+  bgGif->stop(hal);
+#endif
+}

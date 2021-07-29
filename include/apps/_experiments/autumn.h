@@ -10,6 +10,7 @@ class OswAppAutumn : public OswApp {
   OswAppAutumn(){};
   void setup(OswHal* hal);
   void loop(OswHal* hal);
+  void stop(OswHal* hal);
   ~OswAppAutumn(){};
 
  private:

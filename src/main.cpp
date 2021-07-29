@@ -35,6 +35,8 @@
 #include "./apps/tools/time_config.h"
 #include "./apps/tools/water_level.h"
 #include "./apps/watchfaces/watchface.h"
+#include "./apps/watchfaces/watchface_translate2d.h"
+#include "./apps/watchfaces/watchface_rotate3d.h"
 #include "./apps/watchfaces/watchface_binary.h"
 #include "./apps/watchfaces/watchface_digital.h"
 #include "./overlays/overlays.h"
@@ -87,6 +89,8 @@ void setup() {
   // Fire off the service manager
   OswServiceManager::getInstance().setup(hal);
 
+  //watchFaceSwitcher->registerApp(new OswAppWatchfaceTranslate2D());
+  watchFaceSwitcher->registerApp(new OswAppWatchfaceRotate3D());
   watchFaceSwitcher->registerApp(new OswAppWatchface());
   watchFaceSwitcher->registerApp(new OswAppWatchfaceDigital());
   watchFaceSwitcher->registerApp(new OswAppWatchfaceBinary());

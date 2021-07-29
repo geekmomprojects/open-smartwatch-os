@@ -61,6 +61,12 @@ void OswAppAutumn::setup(OswHal* hal) {
   waterBackground->enableMask(maskColor);
 }
 
+void OswAppAutumn::stop(OswHal* hal) {
+#ifdef GIF_BG
+  bgGif->stop(hal);
+#endif
+}
+
 void OswAppAutumn::loop(OswHal* hal) {
   static uint16_t counter = 0;
   counter++;

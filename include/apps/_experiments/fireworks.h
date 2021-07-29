@@ -10,6 +10,7 @@ class OswAppFireworks : public OswApp {
   OswAppFireworks(void){};
   void setup(OswHal* hal);
   void loop(OswHal* hal);
+  void stop(OswHal* hal);
   ~OswAppFireworks(){};
 
  private:
