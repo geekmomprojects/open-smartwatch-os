@@ -5,7 +5,7 @@
 #include <osw_ui.h>
 
 #include "osw_app.h"
-#include "projection.h"
+#include "../../../lib/projection/Projection.h"
 
 class OswAppWatchfaceRotate3D : public OswApp {
  public:
