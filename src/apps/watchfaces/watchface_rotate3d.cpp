@@ -16,6 +16,9 @@ const int middleX = 120;
 const int middleY = 120;
 const int zplane = 15;
 
+// a function to return the position of the points which constitute the line segments 
+void getNumberLines() {}
+
 
 OswAppWatchfaceRotate3D::OswAppWatchfaceRotate3D() : cam(Camera(240,240)) { 
   ui = OswUI::getInstance(); 
@@ -41,6 +44,9 @@ OswAppWatchfaceRotate3D::OswAppWatchfaceRotate3D() : cam(Camera(240,240)) {
     tick_start[i].y = middleY + tickStartRadius*sin(angle);
     tick_start[i].z = zplane;
   }
+
+  // Initialize numbering positions and line segments
+
 
 }
 
@@ -86,23 +92,6 @@ void drawDateTest(OswHal* hal, uint8_t x0 = 120, uint8_t y0 = 120, const bool& u
 void OswAppWatchfaceRotate3D::drawWatch(OswHal* hal) {
 
 
-  /*
-  uint32_t steps = hal->getStepCount();
-  hal->gfx()->drawArc(120, 120, 0, 360 * (steps / 10800.0), 90, 93, 6,
-                      steps > 10800 ? ui->getSuccessColor() : ui->getInfoColor(), true);
-  */
-  // below two arcs take too long to draw
-
-  // hal->gfx()->drawArc(120, 120, 0, 360, 180, 75, 7, changeColor(COLOR_GREEN, 0.25));
-  // hal->gfx()->drawArc(120, 120, 0, (steps / 360) % 360, 180, 75, 7, dimColor(COLOR_GREEN, 25));
-  // hal->gfx()->drawArc(120, 120, 0, (steps / 360) % 360, 180, 75, 6, COLOR_GREEN);
-
-  // float bat = hal->getBatteryPercent() * 3.6;
-
-  // hal->gfx()->drawArc(120, 120, 0, 360, 180, 57, 7, changeColor(COLOR_BLUE, 0.25));
-  // hal->gfx()->drawArc(120, 120, 0, bat, 180, 57, 7, dimColor(COLOR_BLUE, 25));
-  // hal->gfx()->drawArc(120, 120, 0, bat, 180, 57, 6, COLOR_BLUE);
-
   uint32_t second = 0;
   uint32_t minute = 0;
   uint32_t hour = 0;
@@ -113,9 +102,11 @@ void OswAppWatchfaceRotate3D::drawWatch(OswHal* hal) {
   uint16_t red_color = ui->getSuccessColor();
   uint16_t white_color = ui->getForegroundColor();
   hal->getLocalTime(&hour, &minute, &second);
+  hour = hour % 12; // eliminate 24-hour time for angle calculation
 
-  const float xValue = hal->getAccelerationX();
-  const float yValue = hal->getAccelerationY();
+
+  //const float xValue = hal->getAccelerationX();
+  //const float yValue = hal->getAccelerationY();
 
   //const float xAngle = xValue*64;
   //const float yAngle = yValue*64;
@@ -129,7 +120,6 @@ void OswAppWatchfaceRotate3D::drawWatch(OswHal* hal) {
   //const float zValue = hal->getAccelerationZ();
   const int x0 = middleX;
   const int y0 = middleY;
-  float newx, newy;
 
 
   
@@ -142,7 +132,9 @@ void OswAppWatchfaceRotate3D::drawWatch(OswHal* hal) {
   point3 ticks, ticke;
 
   for (int i = 0; i < 60; i ++) {
-    
+    if (i % 15 == 0) { //Don't draw lines where numerals will be
+      continue;
+    }
     ticks = trans*tick_start[i];
     ticke = trans*tick_end[i];
     line3 tline = {ticks, ticke};
@@ -153,10 +145,24 @@ void OswAppWatchfaceRotate3D::drawWatch(OswHal* hal) {
     }
     
   }
+
+  for (int i = 0; i < NUM_SEVEN_SEGMENT_NUMBER_LINES; i++) {
+    ticks.x = numeral_lines[i][0][0];
+    ticks.y = numeral_lines[i][0][1];
+    ticks.z = zplane;
+    ticke.x = numeral_lines[i][1][0];
+    ticke.y = numeral_lines[i][1][1];
+    ticke.z = zplane;
+    ticks = trans*ticks;
+    ticke = trans*ticke;
+    line3 tline = {ticks, ticke};
+    line2 sline = cam.project(tline, false, false);
+    if (!isnan(sline.p0.x) && !isnan(sline.p1.x)) {
+      hal->gfx()->drawThickLine((int)sline.p0.x, (int)sline.p0.y, (int)sline.p1.x, (int)sline.p1.y,2, sec_color);
+    }
+  }
   
   //const bool isXYAccelerationInMiddle = abs(yValue) < 0.25 && abs(xValue) < 0.25;
-
-  uint16_t color = ui->getInfoColor();
  
 
   //hal->gfx()->drawMinuteTicks(x0, y0, 116, 112, ui->getForegroundDimmedColor());
@@ -166,10 +172,11 @@ void OswAppWatchfaceRotate3D::drawWatch(OswHal* hal) {
   hsvToRgb((uint8_t)255*second/60,255,255,r,g,b);
   sec_color = rgb565(r,g,b);
   
+  // Determine points associated with the current time
   point3 hourStart, hourEnd, minStart, minEnd, secStart, secEnd;
-  float hourAngle = DEG_TO_RAD_MACRO(360.0 / 12.0 * (1.0 * hour + minute / 60.0));
-  float minAngle = DEG_TO_RAD_MACRO(360.0 / 60.0 * (1.0 * minute + second / 60.0));
-  float secAngle = DEG_TO_RAD_MACRO(6*second);
+  float hourAngle = DEG_TO_RAD_MACRO((360.0 / 12.0 )* ((3.0-hour) - minute / 60.0));
+  float minAngle = DEG_TO_RAD_MACRO((360.0 / 60.0 )* ((15.0-minute) - second / 60.0));
+  float secAngle = DEG_TO_RAD_MACRO(6.0*(15.0-second));
   const float ch = cos(hourAngle);
   const float sh = sin(hourAngle);
   const float cm = cos(minAngle);
